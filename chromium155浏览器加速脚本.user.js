@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页加速器 v6.4 (Chromium 155+ Desktop)
 // @namespace    https://tampermonkey.net/
-// @version      6.5.0
+// @version      6.5.1
 // @description  Chromium 155+ 原生 Speculation Rules：同源 Moderate Prerender + 跨域 HTTPS Prefetch；强化排除规则与域名处理（v6.5：去掉 anonymous-client-ip-when-cross-origin 硬门槛，跨域 Prefetch 才真正生效）
 // @author       OpenAI and Gemini
 // @match        *://*/*
@@ -12,6 +12,8 @@
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11
 // @resource     swalStyle https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark/dark.css
 // @run-at       document-start
+// @updateURL    https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js
+// @downloadURL  https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js
 // ==/UserScript==
 
 /* global Swal */
