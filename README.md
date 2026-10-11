@@ -3,7 +3,9 @@
 > 用 Chromium 原生的 **Speculation Rules API** 提前预渲染 / 预取你可能要点的下一个页面，让跳转几乎瞬间完成。
 > 一个只做一件事的 Tampermonkey 用户脚本，零后台、零上报、零依赖。
 
-![version](https://img.shields.io/badge/version-6.5.0-blue)
+### [⬇️ 点此一键安装 / 更新](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+
+![version](https://img.shields.io/badge/version-6.5.1-blue)
 ![platform](https://img.shields.io/badge/Chromium-155%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -44,12 +46,38 @@
 
 ## 安装
 
-1. 安装 [Tampermonkey](https://www.tampermonkey.net/)（Violentmonkey 亦可）。
-2. 打开本仓库的 [`chromium-speculation-accelerator.user.js`](./chromium-speculation-accelerator.user.js)。
-3. 点右上角 **Raw**，Tampermonkey 会弹出安装页 → 确认安装。
+1. 先装 [Tampermonkey](https://www.tampermonkey.net/)（Violentmonkey 亦可）。
+2. **点这个直链 →** [`chromium155浏览器加速脚本`](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+   Tampermonkey 会**直接弹出安装确认页**，确认即可。
+3. 完事。打开任意网页按 F12，控制台应出现 `[网页加速器 v6.5] Speculation Rules 已提交。`
+
+> **为什么用上面这个直链？** Tampermonkey 靠 URL 末尾的 `.user.js` 识别用户脚本。
+> 走 GitHub 文件页（网址是 `/blob/...`）再点右上角 **Raw** 当然也能装，但那是两步；
+> 上面的 raw 直链**点一下就是安装页**。
 
 > **要求 Chromium 155+**（Chrome / Edge / Brave / Vivaldi 等）。脚本启动时会自己检测
 > `HTMLScriptElement.supports('speculationrules')`，不支持就直接退出，不会报错刷屏。
+
+---
+
+## 更新
+
+脚本头里已经写好了更新源，不用你操心：
+
+```js
+// @version      6.5.1
+// @updateURL    https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155浏览器加速脚本.user.js
+// @downloadURL  同上
+```
+
+只要仓库里这个文件的 **`@version` 变大**，Tampermonkey 例行检查时就会提示更新。
+
+- 例行检查频率在 Tampermonkey 设置里可调（默认按天级别）；想立刻检查就点
+  Tampermonkey 面板 → 该脚本 → **检查更新**。
+- Tampermonkey **只认 `@version`**：改了代码但版本号没往上加 = 不会提示更新。
+  这是「为什么它不提醒我」最常见的原因。
+- 更新源指向 `raw.githubusercontent.com`，GitHub 的 raw 缓存只有 5 分钟，
+  所以提交后几分钟内就能拉到新版（比 jsDelivr 那种 12 小时缓存快得多）。
 
 ---
 
@@ -153,8 +181,8 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。
 ## 文件
 
 ```
-chromium-speculation-accelerator.user.js   # 用户脚本本体（单文件，698 行）
-README.md                                  # 本文件
+chromium155浏览器加速脚本.user.js   # 用户脚本本体（单文件，699 行，v6.5.1）
+README.md                           # 本文件
 ```
 
 ---
