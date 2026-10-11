@@ -5,7 +5,7 @@
 
 ### [⬇️ 点此一键安装 / 更新](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
 
-![version](https://img.shields.io/badge/version-6.5.1-blue)
+![version](https://img.shields.io/badge/version-6.5.2-blue)
 ![platform](https://img.shields.io/badge/Chromium-155%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -49,7 +49,7 @@
 1. 先装 [Tampermonkey](https://www.tampermonkey.net/)（Violentmonkey 亦可）。
 2. **点这个直链 →** [`chromium155浏览器加速脚本`](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
    Tampermonkey 会**直接弹出安装确认页**，确认即可。
-3. 完事。打开任意网页按 F12，控制台应出现 `[网页加速器 v6.5] Speculation Rules 已提交。`
+3. 完事。打开任意网页按 F12，控制台应出现 `[网页加速器] Speculation Rules 已提交。`
 
 > **为什么用上面这个直链？** Tampermonkey 靠 URL 末尾的 `.user.js` 识别用户脚本。
 > 走 GitHub 文件页（网址是 `/blob/...`）再点右上角 **Raw** 当然也能装，但那是两步；
@@ -65,7 +65,8 @@
 脚本头里已经写好了更新源，不用你操心：
 
 ```js
-// @version      6.5.1
+// @name         网页加速器 (Chromium 155+ Desktop)
+// @version      6.5.2
 // @updateURL    https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155浏览器加速脚本.user.js
 // @downloadURL  同上
 ```
@@ -78,6 +79,8 @@
   这是「为什么它不提醒我」最常见的原因。
 - 更新源指向 `raw.githubusercontent.com`，GitHub 的 raw 缓存只有 5 分钟，
   所以提交后几分钟内就能拉到新版（比 jsDelivr 那种 12 小时缓存快得多）。
+- 脚本名（`@name`）里**故意不带版本号**，版本只写在 `@version` 这一行。
+  这样以后改名、调描述都不会动到 Tampermonkey 的脚本身份。
 
 ---
 
@@ -86,7 +89,7 @@
 安装后无需配置即可生效。打开任意网页，按 F12 看控制台应该能看到：
 
 ```
-[网页加速器 v6.5] Speculation Rules 已提交。 {prerender: [...], prefetch: [...]}
+[网页加速器] Speculation Rules 已提交。 {prerender: [...], prefetch: [...]}
 ```
 
 要调整行为，点 Tampermonkey 图标 → 菜单里有三项：
@@ -181,7 +184,7 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。
 ## 文件
 
 ```
-chromium155浏览器加速脚本.user.js   # 用户脚本本体（单文件，699 行，v6.5.1）
+chromium155浏览器加速脚本.user.js   # 用户脚本本体（单文件，699 行，v6.5.2）
 README.md                           # 本文件
 ```
 
