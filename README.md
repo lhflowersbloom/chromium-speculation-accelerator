@@ -3,11 +3,11 @@
 > 用 Chromium 原生的 **Speculation Rules API** 提前预渲染 / 预取你可能要点的下一个页面，让跳转几乎瞬间完成。
 > 一个只做一件事的 Tampermonkey 用户脚本，零后台、零上报、零依赖。
 
-### [⬇️ 安装 v6.7.0（推荐，新文件）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+### [⬇️ 安装 v6.8.0（推荐，新文件）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
 
 <sub>历史版本 [v6.5.2](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js) 仍保留在仓库中，不再更新。改动见 [CHANGELOG.md](CHANGELOG.md)。</sub>
 
-![version](https://img.shields.io/badge/version-6.7.0-blue)
+![version](https://img.shields.io/badge/version-6.8.0-blue)
 ![platform](https://img.shields.io/badge/Chromium-155%2F156%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -45,9 +45,11 @@
    两项都是 `null` / `undefined` 说明没有信号，同源 + 跨域规则都会启用；
    任一为 `1` / `true` 时，逐个禁用其他 userscript 往往是找出真凶最快的办法。
 
-2. **新旧两版不会并存**
-   两个脚本的 `@name` 完全相同，Tampermonkey 视为**同一个脚本**：安装新版 = 升级旧版，
-   设置会被继承，不会出现两份规则同时注入。请不要手动改名来强行并存。
+2. **新旧两版现在是两个独立脚本**
+   新版脚本名已从 `网页加速器 (Chromium 155+ Desktop)` 改为 **`网页加速器`**
+   （v6.8.0 起，版本号不再混进名字）。仓库里的旧文件仍沿用旧名字，
+   因此如果你把两个文件都装上，Tampermonkey 会把它们当成两个脚本 —— **请只启用其中一个**，
+   否则两条规则会重复注入。
 
 3. **跨域 Prefetch 用你的真实 IP**
    跨域预取会真实请求外部站点的主文档（不带匿名代理）。介意的话在面板关掉「跨域 Prefetch」。
@@ -104,7 +106,7 @@
 ## 安装
 
 1. 先装 [Tampermonkey](https://www.tampermonkey.net/)（Violentmonkey 亦可）。
-2. **点这个直链 →** [`chromium156浏览器加速脚本.user.js`（v6.7.0）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+2. **点这个直链 →** [`chromium156浏览器加速脚本.user.js`（v6.8.0）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
    Tampermonkey 会**直接弹出安装确认页**，确认即可。
 3. 完事。打开任意网页按 F12，控制台应出现 `[网页加速器] Speculation Rules 已提交。`
 
@@ -132,8 +134,8 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
 **6.6.0 起，更新源指向新文件**，脚本头里已经写好，不用你操心：
 
 ```js
-// @name         网页加速器 (Chromium 155+ Desktop)
-// @version      6.7.0
+// @name         网页加速器
+// @version      6.8.0
 // @updateURL    https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156浏览器加速脚本.user.js
 // @downloadURL  同上
 ```
@@ -146,6 +148,10 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
   这是「为什么它不提醒我」最常见的原因。
 - **从 6.5.2 升到 6.6.0 需要手动装一次**：6.5.2 的 `@updateURL` 指向的是旧文件，
   它不会知道新文件的存在。装过一次之后，后续更新就自动走新文件了。
+- **v6.8.0 改了脚本名**。更新是通过 `@updateURL` 走的，脚本内部 ID 不变，
+  所以设置会保留、名字会跟着变；万一面板里出现两个同名条目，保留版本号更高那个、删掉另一个。
+- **版本号只写在 `@version` 一行**，脚本名里不带版本。想快速确认版本，
+  打开「查看运行状态」或设置面板，标题里就写着当前版本。
 - 更新源指向 `raw.githubusercontent.com`，GitHub 的 raw 缓存只有 5 分钟，
   所以提交后几分钟内就能拉到新版（比 jsDelivr 那种 12 小时缓存快得多）。
 - 脚本名（`@name`）里**故意不带版本号**，版本只写在 `@version` 这一行。
@@ -274,7 +280,8 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。v6.6 把它保留
 
 | 版本 | 文件 | 要点 |
 |---|---|---|
-| **6.7.0** | `chromium156浏览器加速脚本.user.js` | 隐私信号改为只约束跨域 Prefetch，同源 Prerender 不再被整体关停；面板/状态文案同步 |
+| **6.8.0** | `chromium156浏览器加速脚本.user.js` | 脚本名简化为「网页加速器」，版本号不再混进名字；`@description` 去掉版本描述 |
+| 6.7.0 | 同上 | 隐私信号改为只约束跨域 Prefetch，同源 Prerender 不再被整体关停；面板/状态文案同步 |
 | 6.6.1 | 同上 | DNT / GPC 触发时不再静默：控制台提示 + 状态面板给出处理方式；文档订正「请勿跟踪」开关的真实位置 |
 | 6.6.0 | 同上 | 修复同源预渲染静默失效、修复特殊字符路径导致整条规则被丢弃；注入提前 + nonce 补注；零 CDN 面板；新增 `_blank` 预渲染（实验） |
 | 6.5.2 | `chromium155浏览器加速脚本.user.js` | 强化排除规则与域名黑名单；SweetAlert2 面板（🗄 保留，停止维护） |
@@ -306,7 +313,7 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。v6.6 把它保留
 ## 文件
 
 ```
-chromium156浏览器加速脚本.user.js   # 当前版本 v6.7.0（单文件，约 1020 行）
+chromium156浏览器加速脚本.user.js   # 当前版本 v6.8.0（单文件，约 1020 行）
 chromium155浏览器加速脚本.user.js   # 历史版本 v6.5.2（原样保留，不再更新）
 CHANGELOG.md                        # 更新日志
 README.md                           # 本文件

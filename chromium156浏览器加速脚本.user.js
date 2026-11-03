@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         网页加速器 (Chromium 155+ Desktop)
+// @name         网页加速器
 // @namespace    https://tampermonkey.net/
-// @version      6.7.0
-// @description  Chromium 155/156+ 原生 Speculation Rules：同源 Moderate Prerender + 跨域 HTTPS Prefetch。v6.6 修复 v6.5 锚点排除规则误伤整段预渲染的问题
+// @version      6.8.0
+// @description  Chromium 155/156+ 原生 Speculation Rules：同源 Prerender + 跨域 HTTPS Prefetch，含排除规则与可视化设置面板
 // @author       ChatGPT & Gemini
 // @match        *://*/*
 // @noframes
@@ -15,17 +15,18 @@
 // ==/UserScript==
 
 /* =========================================================
- * 注意说明（v6.7.0）
+ * 注意说明（v6.8.0）
  *
  * 1. DNT / GPC 信号只约束「跨域 Prefetch」（它会向第三方发起真实请求），
- *    同源 Prerender 不受影响 —— v6.7.0 起不再因为隐私信号而整体空转。
+ *    同源 Prerender 不受影响 —— v6.7 起不再因为隐私信号而整体空转。
  *    实测 Chrome 156 在不少环境下默认就发送 DNT: 1 / Sec-GPC: 1，
  *    若你希望连跨域也一起启用，在「加速器设置」里取消勾选
  *    「跨域推测尊重 DNT / GPC」。
  *    自查：控制台执行 navigator.doNotTrack, navigator.globalPrivacyControl
- * 2. 旧版 chromium155浏览器加速脚本.user.js 与新版 @name 相同，
- *    Tampermonkey 会把它们当作同一个脚本，安装新版即升级旧版，
- *    两个版本不会并存，设置会被继承。
+ * 2. 脚本名从「网页加速器 (Chromium 155+ Desktop)」改为「网页加速器」，
+ *    版本号只写在 @version 与设置面板标题里，不再混进名字。
+ *    旧文件 chromium155浏览器加速脚本.user.js 仍沿用旧名字，
+ *    两个文件因此成为两个独立脚本 —— 若都安装，请只启用其中一个。
  * 3. 跨域 Prefetch 使用你的真实 IP 访问目标站点；不需要请在面板关闭。
  * 4. prerender 会真实执行目标页面的脚本，带副作用的 GET 链接
  *    （登出、加购、删除、一次性 token）必须排除。
@@ -642,7 +643,7 @@
         const rules = buildRules(config);
 
         const lines = [
-            '网页加速器 v6.7.0',
+            '网页加速器 v6.8.0',
             '',
             `Speculation Rules API：${SUPPORTS_SPECULATION ? '支持' : '不支持'}`,
             `桌面指针设备：${HAS_DESKTOP_POINTER ? '通过' : '未通过'}`,
@@ -676,7 +677,7 @@
             '实际推测状态见 DevTools → Application → Speculative loads。'
         );
 
-        console.info('[网页加速器 v6.7.0]', {
+        console.info('[网页加速器 v6.8.0]', {
             support: SUPPORTS_SPECULATION,
             desktopPointer: HAS_DESKTOP_POINTER,
             injected,
@@ -852,7 +853,7 @@
 
             <dialog id="dlg">
                 <div class="header">
-                    <span class="title">🚀 网页加速器 v6.7.0</span>
+                    <span class="title">🚀 网页加速器 v6.8.0</span>
                     <button class="close" id="btn-close" title="关闭">&times;</button>
                 </div>
 
