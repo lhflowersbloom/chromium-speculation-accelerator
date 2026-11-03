@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页加速器 (Chromium 155+ Desktop)
 // @namespace    https://tampermonkey.net/
-// @version      6.6.1
+// @version      6.7.0
 // @description  Chromium 155/156+ 原生 Speculation Rules：同源 Moderate Prerender + 跨域 HTTPS Prefetch。v6.6 修复 v6.5 锚点排除规则误伤整段预渲染的问题
 // @author       ChatGPT & Gemini
 // @match        *://*/*
@@ -15,14 +15,14 @@
 // ==/UserScript==
 
 /* =========================================================
- * 注意说明（v6.6.1）
+ * 注意说明（v6.7.0）
  *
- * 1. 若 navigator.doNotTrack === "1" 或 navigator.globalPrivacyControl === true，
- *    在默认配置（respect_dnt = true）下一条规则都不会注入。
+ * 1. DNT / GPC 信号只约束「跨域 Prefetch」（它会向第三方发起真实请求），
+ *    同源 Prerender 不受影响 —— v6.7.0 起不再因为隐私信号而整体空转。
  *    实测 Chrome 156 在不少环境下默认就发送 DNT: 1 / Sec-GPC: 1，
- *    且设置界面里已经找不到「请勿跟踪」开关。
+ *    若你希望连跨域也一起启用，在「加速器设置」里取消勾选
+ *    「跨域推测尊重 DNT / GPC」。
  *    自查：控制台执行 navigator.doNotTrack, navigator.globalPrivacyControl
- *    解决：在「加速器设置」里取消勾选「尊重 DNT / GPC」。
  * 2. 旧版 chromium155浏览器加速脚本.user.js 与新版 @name 相同，
  *    Tampermonkey 会把它们当作同一个脚本，安装新版即升级旧版，
  *    两个版本不会并存，设置会被继承。
@@ -71,7 +71,8 @@
     const DEFAULTS = {
         enabled: true,
 
-        // 尊重 Do Not Track / Global Privacy Control
+        // 跨域推测是否尊重 Do Not Track / Global Privacy Control
+        // 仅作用于跨域 Prefetch；同源 Prerender 不受此开关影响
         respect_dnt: true,
 
         // 同源完整预渲染
@@ -389,18 +390,12 @@
 
     function buildRules(config = readConfig()) {
         if (!config.enabled) return null;
-        if (config.respect_dnt && isPrivacyOptOut()) {
-            // 绝不静默失败：这条分支会让脚本看起来"装了没用"
-            if (!state.privacyWarned) {
-                state.privacyWarned = true;
-                console.warn(
-                    '[网页加速器] 检测到 DNT / GPC 隐私信号，已按设置跳过注入，本次不产生任何推测规则。' +
-                    '如需启用，请点油猴菜单 → 加速器设置 → 取消「尊重 DNT / GPC」。' +
-                    '（Chrome 156 在不少环境下默认就发送 DNT: 1 / Sec-GPC: 1，设置界面里可能找不到对应开关）'
-                );
-            }
-            return null;
-        }
+
+        // 隐私信号只约束"会向第三方发起请求"的推测（跨域 Prefetch）。
+        // 同源 Prerender 只是在当前站点内部预渲染，不向任何第三方共享数据，
+        // 因此不受 DNT / GPC 影响 —— 否则在 Chrome 默认就发 GPC 的环境里，
+        // 整个脚本会变成一条规则都不产出的空转。
+        const privacyOptOut = config.respect_dnt && isPrivacyOptOut();
 
         const eagerness = config.eagerness;
         const excludedDomains = getExcludedDomains(config);
@@ -471,7 +466,7 @@
 
         /* ---------- 跨域 Prefetch ---------- */
 
-        if (config.allow_external) {
+        if (config.allow_external && !privacyOptOut) {
             const crossOriginWhere = [
                 { href_matches: 'https://*/*' },
                 { not: { href_matches: '/*' } },
@@ -503,6 +498,20 @@
             rules.prefetch = [prefetchRule];
         }
 
+        // 只提示一次：跨域被隐私信号挡下，同源照常工作
+        if (
+            config.allow_external &&
+            privacyOptOut &&
+            !state.prefetchPrivacyNoticed
+        ) {
+            state.prefetchPrivacyNoticed = true;
+            console.info(
+                '[网页加速器] 检测到 DNT / GPC，已跳过跨域 Prefetch（它会向第三方发起真实请求）；' +
+                '同源 Prerender 不受影响。如需连跨域一起启用，请在「加速器设置」里取消' +
+                '「跨域推测尊重 DNT / GPC」。'
+            );
+        }
+
         return Object.keys(rules).length > 0 ? rules : null;
     }
 
@@ -532,7 +541,7 @@
 
     const state = {
         injectedNonce: null,
-        privacyWarned: false
+        prefetchPrivacyNoticed: false
     };
 
     function appendScript(script) {
@@ -629,18 +638,18 @@
         const config = readConfig();
         const injected = Boolean(document.getElementById(SCRIPT_ID));
 
-        const privacyBlocked = config.respect_dnt && isPrivacyOptOut();
+        const privacyOptOut = config.respect_dnt && isPrivacyOptOut();
         const rules = buildRules(config);
 
         const lines = [
-            '网页加速器 v6.6.1',
+            '网页加速器 v6.7.0',
             '',
             `Speculation Rules API：${SUPPORTS_SPECULATION ? '支持' : '不支持'}`,
             `桌面指针设备：${HAS_DESKTOP_POINTER ? '通过' : '未通过'}`,
             `规则节点：${injected ? '已注入 DOM' : '未注入'}`,
             `注入 nonce：${state.injectedNonce || '无'}`,
             `总开关：${config.enabled ? '开启' : '关闭'}`,
-            `DNT / GPC：${privacyBlocked ? '触发隐私退出（规则被跳过）' : '未触发'}`,
+            `DNT / GPC：${privacyOptOut ? '触发（仅跳过跨域 Prefetch）' : '未触发'}`,
             `  doNotTrack=${String(navigator.doNotTrack)}` +
                 `  globalPrivacyControl=${String(navigator.globalPrivacyControl)}`,
             '',
@@ -653,10 +662,10 @@
             ''
         ];
 
-        if (privacyBlocked) {
+        if (privacyOptOut) {
             lines.push(
-                '⚠ 当前浏览器发出了 DNT / GPC 信号，脚本按默认设置不注入任何规则。',
-                '  如需加速：加速器设置 → 取消勾选「尊重 DNT / GPC」。',
+                'ℹ 当前浏览器发出了 DNT / GPC 信号：跨域 Prefetch 已跳过，同源 Prerender 正常工作。',
+                '  如需连跨域一起启用：加速器设置 → 取消勾选「跨域推测尊重 DNT / GPC」。',
                 ''
             );
         }
@@ -667,7 +676,7 @@
             '实际推测状态见 DevTools → Application → Speculative loads。'
         );
 
-        console.info('[网页加速器 v6.6.1]', {
+        console.info('[网页加速器 v6.7.0]', {
             support: SUPPORTS_SPECULATION,
             desktopPointer: HAS_DESKTOP_POINTER,
             injected,
@@ -843,7 +852,7 @@
 
             <dialog id="dlg">
                 <div class="header">
-                    <span class="title">🚀 网页加速器 v6.6.1</span>
+                    <span class="title">🚀 网页加速器 v6.7.0</span>
                     <button class="close" id="btn-close" title="关闭">&times;</button>
                 </div>
 
@@ -858,8 +867,8 @@
 
                     <div class="row">
                         <div>
-                            <div class="row-label">尊重 DNT / GPC</div>
-                            <span class="row-desc">浏览器发出 DNT / GPC 信号时完全不注入（Chrome 156 可能默认就在发送）</span>
+                            <div class="row-label">跨域推测尊重 DNT / GPC</div>
+                            <span class="row-desc">浏览器发出隐私信号时跳过跨域 Prefetch；同源预渲染不受影响</span>
                         </div>
                         <input type="checkbox" id="cfg-respect_dnt">
                     </div>

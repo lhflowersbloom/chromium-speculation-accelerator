@@ -3,11 +3,11 @@
 > 用 Chromium 原生的 **Speculation Rules API** 提前预渲染 / 预取你可能要点的下一个页面，让跳转几乎瞬间完成。
 > 一个只做一件事的 Tampermonkey 用户脚本，零后台、零上报、零依赖。
 
-### [⬇️ 安装 v6.6.1（推荐，新文件）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+### [⬇️ 安装 v6.7.0（推荐，新文件）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
 
 <sub>历史版本 [v6.5.2](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js) 仍保留在仓库中，不再更新。改动见 [CHANGELOG.md](CHANGELOG.md)。</sub>
 
-![version](https://img.shields.io/badge/version-6.6.1-blue)
+![version](https://img.shields.io/badge/version-6.7.0-blue)
 ![platform](https://img.shields.io/badge/Chromium-155%2F156%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -18,23 +18,23 @@
 
 这几条是最容易「装了却感觉没用」或「反而出问题」的地方，先看再装。
 
-1. **浏览器发出 DNT / GPC 信号时，脚本会完全静默**
-   只要 `navigator.doNotTrack === "1"` 或 `navigator.globalPrivacyControl === true`，
-   默认配置（`respect_dnt = true`）下**一条规则都不会注入**。
-
-   实测 Chrome 156 在不少环境下**默认就在发送** `DNT: 1` 和 `Sec-GPC: 1`
-   （读的是原生属性，请求头也真的发出去了），而 Chrome 设置里已经找不到名为「请勿跟踪」的条目——
+1. **DNT / GPC 只约束跨域推测，同源预渲染照常工作**
+   实测 Chrome 156 在不少环境下默认就在发送 `DNT: 1` 和 `Sec-GPC: 1`
+   （原生属性 + 真实请求头），而设置里已经找不到名为「请勿跟踪」的条目——
    旧版本把它藏在 *隐私和安全 → 第三方 Cookie* 页面**底部**，新版可能已移除。
+
+   从 **v6.7.0** 起：
+   - **跨域 Prefetch** 会向第三方站点发起真实请求，因此**尊重**隐私信号 → 被跳过
+   - **同源 Prerender** 只在你自己已登录的站内预渲染，不向任何第三方共享数据 → **不受影响**
+
+   也就是说，默认配置下你依然能用上站内跳转的加速，只是外站链接不做预取。
+   想要连跨域一起启用，在「加速器设置」里取消勾选「跨域推测尊重 DNT / GPC」。
 
    **自查**：F12 控制台执行一行
 
    ```js
    navigator.doNotTrack, navigator.globalPrivacyControl
    ```
-
-   任一项是 `1` / `true`，就到「加速器设置」里**取消勾选「尊重 DNT / GPC」**。
-   这是「装了没感觉」最常见的原因；v6.6.1 起脚本还会在控制台直接给出警告，不再静默。
-   （如果你装了广告拦截或隐私代理软件，也可能是它在代你发送这个信号。）
 
 2. **新旧两版不会并存**
    两个脚本的 `@name` 完全相同，Tampermonkey 视为**同一个脚本**：安装新版 = 升级旧版，
@@ -84,7 +84,7 @@
 | 🛡 **安全排除** | 自动跳过 `target="_blank"`、`download`、`nofollow`、下载文件、页内锚点 |
 | 🚫 **关键词排除** | 默认排除 `logout` `login` `cart` `checkout` `oauth` `token` 等危险路径，可自定义 |
 | 📋 **域名黑名单** | 支持 `example.com`、`*.example.com`、完整 URL 三种写法，一行一个 |
-| 🙈 **尊重 DNT / GPC** | 检测到隐私退出信号时自动闭嘴 |
+| 🙈 **隐私信号分离处理** | 跨域预取尊重 DNT / GPC，同源预渲染不受影响 |
 | 🖥 **桌面限定** | 仅在 `hover: hover` + `pointer: fine` 的设备上启用，手机/平板不浪费流量 |
 | 🧩 **严格 CSP 兼容** | 复用页面 nonce 注入规则，尽量绕开 `script-src` 拦截 |
 | ⚙️ **可视化面板** | 原生 `<dialog>` + Shadow DOM，深色模式自适应，不用手改代码 |
@@ -95,7 +95,7 @@
 ## 安装
 
 1. 先装 [Tampermonkey](https://www.tampermonkey.net/)（Violentmonkey 亦可）。
-2. **点这个直链 →** [`chromium156浏览器加速脚本.user.js`（v6.6.1）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+2. **点这个直链 →** [`chromium156浏览器加速脚本.user.js`（v6.7.0）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
    Tampermonkey 会**直接弹出安装确认页**，确认即可。
 3. 完事。打开任意网页按 F12，控制台应出现 `[网页加速器] Speculation Rules 已提交。`
 
@@ -124,7 +124,7 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
 
 ```js
 // @name         网页加速器 (Chromium 155+ Desktop)
-// @version      6.6.1
+// @version      6.7.0
 // @updateURL    https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156浏览器加速脚本.user.js
 // @downloadURL  同上
 ```
@@ -165,7 +165,7 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
 ### 设置项
 
 - **启用加速** — 总开关。
-- **尊重 DNT / GPC** — 浏览器开启隐私退出信号时**完全停止注入**。装完没效果先看这项。
+- **跨域推测尊重 DNT / GPC** — 浏览器发出隐私信号时跳过**跨域 Prefetch**；同源 Prerender 不受影响。
 - **同源 Prerender** — 是否整页预渲染站内链接。
 - **跨域 Prefetch** — 是否对外站链接做预取。关掉可以省流量、也不暴露真实 IP。
 - **跨域要求匿名客户端 IP** — 默认关闭。开启后若环境拿不到匿名 IP，**整条跨域规则会失效**（见下文 v6.5 说明）。
@@ -228,6 +228,19 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
 
 现在改为：只排除「当前页 + 锚点」，并且对 pathname 做转义与预校验。
 
+### v6.7 的变化：隐私信号只约束跨域
+
+两类推测的性质不同，不该用同一把锁：
+
+| 推测类型 | 是否向第三方发请求 | 是否共享数据 | 对 DNT / GPC 的响应 |
+|---|---|---|---|
+| 同源 Prerender | 否，只请求当前站点 | 否 | **不受影响** |
+| 跨域 Prefetch | **是**，真实请求目标站点 | **是**（真实 IP + Referer） | **跳过** |
+
+GPC 表达的是「不要出售或共享我的个人信息」。同源预渲染只是在你已经登录的站点内部提前渲染，
+并没有把数据交给第三方，因此不该被它拦下。而 Chrome 156 在不少环境下默认就在发这个信号，
+若坚持用 GPC 关掉一切，脚本会变成"装了等于没装"。
+
 ### v6.5 的变化：拿掉 `anonymous-client-ip-when-cross-origin`
 
 旧版本给跨域规则声明了：
@@ -252,7 +265,8 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。v6.6 把它保留
 
 | 版本 | 文件 | 要点 |
 |---|---|---|
-| **6.6.1** | `chromium156浏览器加速脚本.user.js` | DNT / GPC 触发时不再静默：控制台警告 + 状态面板给出处理方式；文档订正「请勿跟踪」开关的真实位置 |
+| **6.7.0** | `chromium156浏览器加速脚本.user.js` | 隐私信号改为只约束跨域 Prefetch，同源 Prerender 不再被整体关停；面板/状态文案同步 |
+| 6.6.1 | 同上 | DNT / GPC 触发时不再静默：控制台提示 + 状态面板给出处理方式；文档订正「请勿跟踪」开关的真实位置 |
 | 6.6.0 | 同上 | 修复同源预渲染静默失效、修复特殊字符路径导致整条规则被丢弃；注入提前 + nonce 补注；零 CDN 面板；新增 `_blank` 预渲染（实验） |
 | 6.5.2 | `chromium155浏览器加速脚本.user.js` | 强化排除规则与域名黑名单；SweetAlert2 面板（🗄 保留，停止维护） |
 | 6.5 | 同上 | 去掉 `anonymous-client-ip-when-cross-origin` 硬门槛，跨域预取才真正生效 |
@@ -283,7 +297,7 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。v6.6 把它保留
 ## 文件
 
 ```
-chromium156浏览器加速脚本.user.js   # 当前版本 v6.6.1（单文件，约 1000 行）
+chromium156浏览器加速脚本.user.js   # 当前版本 v6.7.0（单文件，约 1020 行）
 chromium155浏览器加速脚本.user.js   # 历史版本 v6.5.2（原样保留，不再更新）
 CHANGELOG.md                        # 更新日志
 README.md                           # 本文件
