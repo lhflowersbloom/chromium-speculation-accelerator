@@ -3,11 +3,11 @@
 > 用 Chromium 原生的 **Speculation Rules API** 提前预渲染 / 预取你可能要点的下一个页面，让跳转几乎瞬间完成。
 > 一个只做一件事的 Tampermonkey 用户脚本，零后台、零上报、零依赖。
 
-### [⬇️ 安装 v6.6.0（推荐，新文件）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+### [⬇️ 安装 v6.6.1（推荐，新文件）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
 
 <sub>历史版本 [v6.5.2](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium155%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js) 仍保留在仓库中，不再更新。改动见 [CHANGELOG.md](CHANGELOG.md)。</sub>
 
-![version](https://img.shields.io/badge/version-6.6.0-blue)
+![version](https://img.shields.io/badge/version-6.6.1-blue)
 ![platform](https://img.shields.io/badge/Chromium-155%2F156%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -18,11 +18,23 @@
 
 这几条是最容易「装了却感觉没用」或「反而出问题」的地方，先看再装。
 
-1. **浏览器开着「请勿跟踪」时，脚本会完全静默**
-   Chrome 里开启 *设置 → 隐私和安全 → 请勿跟踪* 后，`navigator.doNotTrack` 为 `"1"` 且
-   `navigator.globalPrivacyControl` 为 `true`。本脚本默认 `respect_dnt = true`，此时**一条规则都不会注入**。
-   要么关掉浏览器该项设置，要么在面板里取消勾选「尊重 DNT / GPC」。
-   （这是最常见的原因：脚本没坏，是被自己的隐私设置挡掉了。）
+1. **浏览器发出 DNT / GPC 信号时，脚本会完全静默**
+   只要 `navigator.doNotTrack === "1"` 或 `navigator.globalPrivacyControl === true`，
+   默认配置（`respect_dnt = true`）下**一条规则都不会注入**。
+
+   实测 Chrome 156 在不少环境下**默认就在发送** `DNT: 1` 和 `Sec-GPC: 1`
+   （读的是原生属性，请求头也真的发出去了），而 Chrome 设置里已经找不到名为「请勿跟踪」的条目——
+   旧版本把它藏在 *隐私和安全 → 第三方 Cookie* 页面**底部**，新版可能已移除。
+
+   **自查**：F12 控制台执行一行
+
+   ```js
+   navigator.doNotTrack, navigator.globalPrivacyControl
+   ```
+
+   任一项是 `1` / `true`，就到「加速器设置」里**取消勾选「尊重 DNT / GPC」**。
+   这是「装了没感觉」最常见的原因；v6.6.1 起脚本还会在控制台直接给出警告，不再静默。
+   （如果你装了广告拦截或隐私代理软件，也可能是它在代你发送这个信号。）
 
 2. **新旧两版不会并存**
    两个脚本的 `@name` 完全相同，Tampermonkey 视为**同一个脚本**：安装新版 = 升级旧版，
@@ -83,7 +95,7 @@
 ## 安装
 
 1. 先装 [Tampermonkey](https://www.tampermonkey.net/)（Violentmonkey 亦可）。
-2. **点这个直链 →** [`chromium156浏览器加速脚本.user.js`（v6.6.0）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+2. **点这个直链 →** [`chromium156浏览器加速脚本.user.js`（v6.6.1）](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
    Tampermonkey 会**直接弹出安装确认页**，确认即可。
 3. 完事。打开任意网页按 F12，控制台应出现 `[网页加速器] Speculation Rules 已提交。`
 
@@ -112,7 +124,7 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
 
 ```js
 // @name         网页加速器 (Chromium 155+ Desktop)
-// @version      6.6.0
+// @version      6.6.1
 // @updateURL    https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156浏览器加速脚本.user.js
 // @downloadURL  同上
 ```
@@ -240,7 +252,8 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。v6.6 把它保留
 
 | 版本 | 文件 | 要点 |
 |---|---|---|
-| **6.6.0** | `chromium156浏览器加速脚本.user.js` | 修复同源预渲染静默失效、修复特殊字符路径导致整条规则被丢弃；注入提前 + nonce 补注；零 CDN 面板；新增 `_blank` 预渲染（实验） |
+| **6.6.1** | `chromium156浏览器加速脚本.user.js` | DNT / GPC 触发时不再静默：控制台警告 + 状态面板给出处理方式；文档订正「请勿跟踪」开关的真实位置 |
+| 6.6.0 | 同上 | 修复同源预渲染静默失效、修复特殊字符路径导致整条规则被丢弃；注入提前 + nonce 补注；零 CDN 面板；新增 `_blank` 预渲染（实验） |
 | 6.5.2 | `chromium155浏览器加速脚本.user.js` | 强化排除规则与域名黑名单；SweetAlert2 面板（🗄 保留，停止维护） |
 | 6.5 | 同上 | 去掉 `anonymous-client-ip-when-cross-origin` 硬门槛，跨域预取才真正生效 |
 
@@ -270,7 +283,7 @@ v6.5 去掉该声明后，跨域 Prefetch 立即恢复工作。v6.6 把它保留
 ## 文件
 
 ```
-chromium156浏览器加速脚本.user.js   # 当前版本 v6.6.0（单文件，约 990 行）
+chromium156浏览器加速脚本.user.js   # 当前版本 v6.6.1（单文件，约 1000 行）
 chromium155浏览器加速脚本.user.js   # 历史版本 v6.5.2（原样保留，不再更新）
 CHANGELOG.md                        # 更新日志
 README.md                           # 本文件

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         网页加速器 (Chromium 155+ Desktop)
 // @namespace    https://tampermonkey.net/
-// @version      6.6.0
+// @version      6.6.1
 // @description  Chromium 155/156+ 原生 Speculation Rules：同源 Moderate Prerender + 跨域 HTTPS Prefetch。v6.6 修复 v6.5 锚点排除规则误伤整段预渲染的问题
 // @author       ChatGPT & Gemini
 // @match        *://*/*
@@ -15,11 +15,14 @@
 // ==/UserScript==
 
 /* =========================================================
- * 注意说明（v6.6.0）
+ * 注意说明（v6.6.1）
  *
- * 1. 浏览器开启「请勿跟踪」时，navigator.doNotTrack = "1" 且
- *    globalPrivacyControl = true；本脚本默认 respect_dnt = true，
- *    此时一条规则都不会注入。若装了没效果，先查这一项。
+ * 1. 若 navigator.doNotTrack === "1" 或 navigator.globalPrivacyControl === true，
+ *    在默认配置（respect_dnt = true）下一条规则都不会注入。
+ *    实测 Chrome 156 在不少环境下默认就发送 DNT: 1 / Sec-GPC: 1，
+ *    且设置界面里已经找不到「请勿跟踪」开关。
+ *    自查：控制台执行 navigator.doNotTrack, navigator.globalPrivacyControl
+ *    解决：在「加速器设置」里取消勾选「尊重 DNT / GPC」。
  * 2. 旧版 chromium155浏览器加速脚本.user.js 与新版 @name 相同，
  *    Tampermonkey 会把它们当作同一个脚本，安装新版即升级旧版，
  *    两个版本不会并存，设置会被继承。
@@ -386,7 +389,18 @@
 
     function buildRules(config = readConfig()) {
         if (!config.enabled) return null;
-        if (config.respect_dnt && isPrivacyOptOut()) return null;
+        if (config.respect_dnt && isPrivacyOptOut()) {
+            // 绝不静默失败：这条分支会让脚本看起来"装了没用"
+            if (!state.privacyWarned) {
+                state.privacyWarned = true;
+                console.warn(
+                    '[网页加速器] 检测到 DNT / GPC 隐私信号，已按设置跳过注入，本次不产生任何推测规则。' +
+                    '如需启用，请点油猴菜单 → 加速器设置 → 取消「尊重 DNT / GPC」。' +
+                    '（Chrome 156 在不少环境下默认就发送 DNT: 1 / Sec-GPC: 1，设置界面里可能找不到对应开关）'
+                );
+            }
+            return null;
+        }
 
         const eagerness = config.eagerness;
         const excludedDomains = getExcludedDomains(config);
@@ -517,7 +531,8 @@
      * ========================================================= */
 
     const state = {
-        injectedNonce: null
+        injectedNonce: null,
+        privacyWarned: false
     };
 
     function appendScript(script) {
@@ -612,20 +627,22 @@
 
     function showStatus() {
         const config = readConfig();
-        const rules = buildRules(config);
         const injected = Boolean(document.getElementById(SCRIPT_ID));
 
         const privacyBlocked = config.respect_dnt && isPrivacyOptOut();
+        const rules = buildRules(config);
 
         const lines = [
-            '网页加速器 v6.6',
+            '网页加速器 v6.6.1',
             '',
             `Speculation Rules API：${SUPPORTS_SPECULATION ? '支持' : '不支持'}`,
             `桌面指针设备：${HAS_DESKTOP_POINTER ? '通过' : '未通过'}`,
             `规则节点：${injected ? '已注入 DOM' : '未注入'}`,
             `注入 nonce：${state.injectedNonce || '无'}`,
             `总开关：${config.enabled ? '开启' : '关闭'}`,
-            `DNT / GPC：${privacyBlocked ? '触发隐私退出' : '未触发'}`,
+            `DNT / GPC：${privacyBlocked ? '触发隐私退出（规则被跳过）' : '未触发'}`,
+            `  doNotTrack=${String(navigator.doNotTrack)}` +
+                `  globalPrivacyControl=${String(navigator.globalPrivacyControl)}`,
             '',
             `同源 Prerender：${rules?.prerender ? '启用' : '未启用'}`,
             `新标签页预渲染：${config.prerender_new_tab ? '开启' : '关闭'}`,
@@ -633,13 +650,24 @@
             `推测强度：${config.eagerness}`,
             `匿名 IP 要求：${config.anon_ip_external ? '开启' : '关闭'}`,
             `同页锚点排除模式：${buildSamePagePattern() || '（未生成）'}`,
-            '',
+            ''
+        ];
+
+        if (privacyBlocked) {
+            lines.push(
+                '⚠ 当前浏览器发出了 DNT / GPC 信号，脚本按默认设置不注入任何规则。',
+                '  如需加速：加速器设置 → 取消勾选「尊重 DNT / GPC」。',
+                ''
+            );
+        }
+
+        lines.push(
             '注意：规则注入成功不代表浏览器一定执行。',
             '严格 CSP 可能阻止规则生效。',
             '实际推测状态见 DevTools → Application → Speculative loads。'
-        ];
+        );
 
-        console.info('[网页加速器 v6.6]', {
+        console.info('[网页加速器 v6.6.1]', {
             support: SUPPORTS_SPECULATION,
             desktopPointer: HAS_DESKTOP_POINTER,
             injected,
@@ -815,7 +843,7 @@
 
             <dialog id="dlg">
                 <div class="header">
-                    <span class="title">🚀 网页加速器 v6.6</span>
+                    <span class="title">🚀 网页加速器 v6.6.1</span>
                     <button class="close" id="btn-close" title="关闭">&times;</button>
                 </div>
 
@@ -831,7 +859,7 @@
                     <div class="row">
                         <div>
                             <div class="row-label">尊重 DNT / GPC</div>
-                            <span class="row-desc">浏览器开启隐私信号时暂停注入</span>
+                            <span class="row-desc">浏览器发出 DNT / GPC 信号时完全不注入（Chrome 156 可能默认就在发送）</span>
                         </div>
                         <input type="checkbox" id="cfg-respect_dnt">
                     </div>
