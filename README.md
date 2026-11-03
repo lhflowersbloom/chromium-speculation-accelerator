@@ -19,9 +19,15 @@
 这几条是最容易「装了却感觉没用」或「反而出问题」的地方，先看再装。
 
 1. **DNT / GPC 只约束跨域推测，同源预渲染照常工作**
-   实测 Chrome 156 在不少环境下默认就在发送 `DNT: 1` 和 `Sec-GPC: 1`
-   （原生属性 + 真实请求头），而设置里已经找不到名为「请勿跟踪」的条目——
-   旧版本把它藏在 *隐私和安全 → 第三方 Cookie* 页面**底部**，新版可能已移除。
+   若浏览器上报 `navigator.doNotTrack === "1"` 或 `navigator.globalPrivacyControl === true`，
+   说明有东西在替你发送「隐私退出」信号。来源按常见程度排序：
+
+   - **其他 userscript / 隐私插件**。它们常用 `@match *://*/*` 全局生效，且能改写
+     `navigator` 属性、甚至通过 `@webRequest` 注入 `DNT` / `Sec-GPC` 请求头，
+     伪装得像浏览器自带的一样，非常容易被忽略。（实测「Don't track me Google」就是如此。）
+   - **Chrome 自带的「请勿跟踪」**。它不在顶层菜单，旧版本位于
+     *隐私和安全 → 第三方 Cookie* 页面**底部**，新版可能已移除。
+   - **广告拦截 / 隐私代理软件**。
 
    从 **v6.7.0** 起：
    - **跨域 Prefetch** 会向第三方站点发起真实请求，因此**尊重**隐私信号 → 被跳过
@@ -35,6 +41,9 @@
    ```js
    navigator.doNotTrack, navigator.globalPrivacyControl
    ```
+
+   两项都是 `null` / `undefined` 说明没有信号，同源 + 跨域规则都会启用；
+   任一为 `1` / `true` 时，逐个禁用其他 userscript 往往是找出真凶最快的办法。
 
 2. **新旧两版不会并存**
    两个脚本的 `@name` 完全相同，Tampermonkey 视为**同一个脚本**：安装新版 = 升级旧版，
@@ -238,8 +247,8 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
 | 跨域 Prefetch | **是**，真实请求目标站点 | **是**（真实 IP + Referer） | **跳过** |
 
 GPC 表达的是「不要出售或共享我的个人信息」。同源预渲染只是在你已经登录的站点内部提前渲染，
-并没有把数据交给第三方，因此不该被它拦下。而 Chrome 156 在不少环境下默认就在发这个信号，
-若坚持用 GPC 关掉一切，脚本会变成"装了等于没装"。
+并没有把数据交给第三方，因此不该被它拦下。而现实中替你发这个信号的东西不少
+（其他 userscript、隐私插件、拦截软件），若坚持用 GPC 关掉一切，脚本很容易变成"装了等于没装"。
 
 ### v6.5 的变化：拿掉 `anonymous-client-ip-when-cross-origin`
 
