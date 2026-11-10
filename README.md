@@ -3,10 +3,10 @@
 > 用 Chromium 原生的 **Speculation Rules API** 提前预渲染 / 预取你可能要点的下一个页面，让跳转几乎瞬间完成。
 > 一个只做一件事的 Tampermonkey 用户脚本，零后台、零上报、零依赖。
 
-### [⬇️ 安装 v6.8.0](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium156%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+### [⬇️ 安装 v6.8.3](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium157%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
 
-![version](https://img.shields.io/badge/version-6.8.0-blue)
-![platform](https://img.shields.io/badge/Chromium-155%2F156%2B-green)
+![version](https://img.shields.io/badge/version-6.8.3-blue)
+![platform](https://img.shields.io/badge/Chromium-155%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 
 ---
@@ -33,7 +33,8 @@
 | 🚀 **同源预渲染** | 站内链接整页提前渲染，跳转体感接近 0ms |
 | 🌐 **跨域预取** | 外站链接只拉文档、不执行脚本，成本更低 |
 | 🎚 **三档强度** | `conservative` / `moderate`（推荐）/ `eager` |
-| 🛡 **自动排除** | `target="_blank"`、`download`、`nofollow`、下载文件、页内锚点 |
+| 🛡 **自动排除** | `download`、`nofollow`、下载包 / 图片直链、页内锚点；副作用关键词与域名黑名单 |
+| 🔗 **新标签页外链** | 外链几乎都是新标签打开；`target="_blank"` 只对预渲染排除，预取照常 |
 | 🚫 **可自定义排除** | 关键词（`logout` `cart` `token`…）+ 域名黑名单，一行一个 |
 | 🙈 **隐私信号分离** | 跨域预取尊重 DNT / GPC，同源预渲染不受影响 |
 | 🖥 **仅桌面启用** | 手机 / 平板自动跳过，不浪费流量 |
@@ -53,7 +54,12 @@
 > 直链末尾是 `.user.js`，Tampermonkey 靠它识别脚本，点一下就是安装页；
 > 走 GitHub 文件页再点 Raw 也行，只是多一步。
 
-**只装一个**：仓库里有新旧两个文件，同时安装会重复注入规则，请只启用其中一个。
+**只装一个**：仓库里保留了三个版本的文件，同时启用会重复注入规则，请只启用其中一个。
+
+> **从 6.8.0 升级**：这一版换了文件名（`chromium156…` → `chromium157…`），
+> 所以要手动点一次上面的安装链接 —— 装着旧文件的人不会自动升上来。
+> 装之前把「排除域名 / 排除关键词」两栏内容复制出来，装完粘回去；
+> 然后把旧的 `chromium156…` 条目**禁用**即可（不用删）。
 
 <details>
 <summary>我要装回旧版 v6.5.2</summary>
@@ -116,7 +122,7 @@ https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerato
 | Firefox / Safari | ❌ 无 Speculation Rules API |
 | 手机 / 平板 | ❌ 主动跳过（非精确指针设备） |
 
-文件名里的 `156` 只是**发布批次**，接口与 155 相同，155 及以上都能用。
+文件名里的 `157` 只是**发布批次**，接口与 155 相同，155 及以上都能用。
 
 ## 已知限制
 
@@ -131,17 +137,23 @@ Tampermonkey 按 `@updateURL` 自动检查（默认按天）；想立刻检查�
 它**只认 `@version`**：代码改了但版本号没往上加，就不会提示更新。
 当前版本看设置面板标题，或「查看运行状态」第一行。
 
+> 6.8.3 起 `@updateURL` 指向 `chromium157浏览器加速脚本.user.js`，与安装地址一致，
+> 后续版本可以直接推送，不用再改地址。6.8.0 那版的地址指向 `chromium156…`，
+> 这也是它收不到本版更新的原因。
+
 ## 文件与版本
 
 ```
-chromium156浏览器加速脚本.user.js   # 当前版本 v6.8.0，单文件约 1020 行
+chromium157浏览器加速脚本.user.js   # 当前版本 v6.8.3，单文件约 1220 行
+chromium156浏览器加速脚本.user.js   # 上一版 v6.8.0，原样保留
 chromium155浏览器加速脚本.user.js   # 历史版本 v6.5.2，原样保留
 CHANGELOG.md                        # 每个版本改了什么、为什么改
 ```
 
 | 版本 | 要点 |
 |---|---|
-| **6.8.0** | 脚本名简化为「网页加速器」，版本号不再混进名字 |
+| **6.8.3** | 跨域预取不再排除 `target="_blank"`；面板样式复用 nonce；更新地址指向新文件 |
+| 6.8.0 | 脚本名简化为「网页加速器」，版本号不再混进名字 |
 | 6.7.0 | 隐私信号只约束跨域预取，同源预渲染不再被整体关停 |
 
 完整历史、实现细节与实测数据见 **[CHANGELOG.md](CHANGELOG.md)**。
