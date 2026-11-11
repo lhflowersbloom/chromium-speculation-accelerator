@@ -5,6 +5,8 @@
 
 ### [⬇️ 安装 v6.8.4](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium158%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
 
+> 也在 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/604812) 上架，那条会从本仓库自动同步，从哪边装都一样。
+
 ![version](https://img.shields.io/badge/version-6.8.4-blue)
 ![platform](https://img.shields.io/badge/Chromium-122%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
