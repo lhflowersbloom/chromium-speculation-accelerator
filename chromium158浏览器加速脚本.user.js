@@ -6,6 +6,7 @@
 // @author       ChatGPT & DeepSeek
 // @homepageURL  https://lhflowersbloom.github.io/chromium-speculation-accelerator/
 // @supportURL   https://github.com/lhflowersbloom/chromium-speculation-accelerator/issues
+// @license      MIT
 // @match        *://*/*
 // @noframes
 // @grant        GM_getValue

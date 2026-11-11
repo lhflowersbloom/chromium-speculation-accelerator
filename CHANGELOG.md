@@ -40,6 +40,11 @@
   原值 `ChatGPT & Gemini` 与 README 致谢（ChatGPT 与 DeepSeek）不一致，按 README 统一为
   `ChatGPT & DeepSeek`。
 
+- **补 `@license MIT`**
+
+  仓库一直是 MIT，但元数据里从未声明。Greasy Fork 发布时强制要求该字段（否则只能勾选
+  「不声明许可证就保存」，等于默认不允许他人修改与再分发）。
+
 ---
 
 ## 6.8.3 — 2026-11-10
