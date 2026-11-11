@@ -9,6 +9,8 @@
 ![platform](https://img.shields.io/badge/Chromium-122%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 
+原理、特性表、兼容性与常见问题，也在[介绍页](https://lhflowersbloom.github.io/chromium-speculation-accelerator/)上有一份图文版。
+
 ---
 
 ## 这是什么
@@ -133,6 +135,7 @@ chromium157浏览器加速脚本.user.js   # 当前版本 v6.8.3，约 1220 行
 chromium156浏览器加速脚本.user.js   # 上一版 v6.8.0，原样保留
 chromium155浏览器加速脚本.user.js   # 历史版本 v6.5.2，原样保留
 CHANGELOG.md                        # 每个版本改了什么、为什么改
+docs/                               # 介绍页（GitHub Pages）
 ```
 
 | 版本 | 要点 |

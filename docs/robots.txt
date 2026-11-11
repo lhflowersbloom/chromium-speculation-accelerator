@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lhflowersbloom.github.io/chromium-speculation-accelerator/sitemap.xml

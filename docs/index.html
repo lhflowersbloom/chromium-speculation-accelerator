@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>网页加速器 — 让 Chrome 秒开下一个页面（Tampermonkey 油猴脚本）</title>
+<meta name="description" content="用 Chromium 原生 Speculation Rules API 给所有网站补上预渲染与预取：指针悬停即预渲染站内链接、跨域只预取文档。Tampermonkey 油猴脚本，无后台、无上报、零依赖，Chromium 122+ 桌面版可用。">
+<link rel="canonical" href="https://lhflowersbloom.github.io/chromium-speculation-accelerator/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="网页加速器 — Chromium Speculation Rules 油猴脚本">
+<meta property="og:description" content="给所有网站补上原生预渲染：悬停链接就提前渲染目标页，点击即开。Tampermonkey 脚本，零依赖、无上报。">
+<meta property="og:url" content="https://lhflowersbloom.github.io/chromium-speculation-accelerator/">
+<meta name="twitter:card" content="summary">
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f6f8fa; --ink:#1f2328; --muted:#59636e;
+    --line:#d1d9e0; --accent:#0a7ea4; --accent-soft:#e6f6fb; --accent-line:#b6e3f0;
+    --code-bg:#0d1117; --code-ink:#e6edf3;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans",Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 var(--sans);}
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px}
+  header{padding:56px 0 8px}
+  .eyebrow{font:600 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  h1{font-size:34px;line-height:1.25;letter-spacing:-.02em;margin:14px 0 12px;font-weight:700}
+  h1 .hl{color:var(--accent)}
+  .lede{font-size:17.5px;color:var(--muted);margin:0 0 22px;max-width:62ch}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px;padding:0;list-style:none}
+  .chips li{font:500 12.5px/1 var(--mono);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 11px}
+  .cta{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 10px}
+  .btn{display:inline-block;background:#1f883d;color:#fff;font-weight:600;font-size:15px;padding:12px 20px;border-radius:8px}
+  .btn:hover{text-decoration:none;background:#1a7f37}
+  .btn.alt{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+  .btn.alt:hover{background:#eef1f4}
+  h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  p{margin:0 0 14px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:0 0 14px;font-size:14.5px}
+  .flow b{font-weight:600}
+  .flow .arrow{color:var(--muted)}
+  .code{background:var(--code-bg);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:0 0 14px}
+  .code code{font:13.5px/1.7 var(--mono);color:var(--code-ink);white-space:pre;word-break:break-all}
+  .note{background:var(--accent-soft);border:1px solid var(--accent-line);border-radius:10px;padding:14px 16px;font-size:14.5px;margin:0 0 14px}
+  .note b{font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:14.5px;margin:0 0 14px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font:600 12px/1.2 var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+  td code,p code,li code{font:12.5px/1.4 var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 5px;overflow-wrap:anywhere}
+  ul,ol{padding-left:22px;margin:0 0 14px}
+  li{margin:0 0 7px}
+  ol li{margin:0 0 10px}
+  details{border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:0 0 10px}
+  details summary{cursor:pointer;font-weight:600;font-size:15px}
+  details p{margin:10px 0 0;color:#37414b;font-size:14.5px}
+  .en{border-left:3px solid var(--accent-line);padding:2px 0 2px 16px;color:#37414b;font-size:14.5px}
+  .en p{margin:0 0 8px}
+  footer{margin:56px 0 0;padding:22px 0 60px;border-top:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+  footer a{color:var(--muted);text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">Tampermonkey · Chromium 122+ · v6.8.3</div>
+  <h1><span class="hl">网页加速器</span> — 让 Chrome 秒开下一个页面</h1>
+  <p class="lede">Chromium 自带一个「提前准备下一个页面」的能力，只是几乎没有网站用它。这个油猴脚本以用户脚本的形式，替所有网站补上这段规则：指针悬停在链接上，目标页已经在后台渲染好，点下去直接呈现。</p>
+  <ul class="chips">
+    <li>Speculation Rules API</li><li>同源预渲染</li><li>跨域预取</li><li>零依赖 · 无上报</li>
+  </ul>
+  <div class="cta">
+    <a class="btn" href="https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium157%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js">安装到 Tampermonkey</a>
+    <a class="btn alt" href="https://github.com/lhflowersbloom/chromium-speculation-accelerator">源码仓库</a>
+  </div>
+  <p style="font-size:14px;color:var(--muted);margin:0">需要先装 <a href="https://www.tampermonkey.net/">Tampermonkey</a>（Violentmonkey 亦可）。链接触发的是安装请求，不是下载文件。</p>
+</header>
+
+<h2>它做了什么</h2>
+<div class="flow">
+  <span>鼠标移到链接上</span><span class="arrow">→</span>
+  <b>浏览器预渲染目标页</b><span class="arrow">→</span>
+  <span>点击</span><span class="arrow">→</span>
+  <b>页面即刻呈现</b>
+</div>
+<p>Chromium 的 <strong>Speculation Rules API</strong> 接受一段 JSON 规则：匹配到的链接会在后台被预取（只取文档）或预渲染（整页跑起来）。配合 <code>eagerness</code>，可以在「用户只是路过」和「用户真的要打开」之间取一个平衡点。</p>
+<p>问题在于，愿意在自己站点上写这段规则的网站很少。这个脚本做的是<strong>把这段规则注入到每一个你访问的页面</strong>——它不代理流量、不改动请求、不拦截内容，只是把这个原生能力打开。</p>
+
+<h2>特性</h2>
+<table>
+  <tbody>
+    <tr><td><b>同源预渲染</b></td><td>站内链接整页预渲染，跳转几乎瞬时完成，加速主力</td></tr>
+    <tr><td><b>跨域预取</b></td><td>外站只取文档、不执行脚本，开销更低；可单独关闭</td></tr>
+    <tr><td><b>三档强度</b></td><td><code>conservative</code> / <code>moderate</code>（默认）/ <code>eager</code></td></tr>
+    <tr><td><b>自动排除</b></td><td><code>download</code>、<code>nofollow</code>、下载包与图片直链、页内锚点、副作用链接</td></tr>
+    <tr><td><b>自定义排除</b></td><td>关键词（<code>logout</code>、<code>cart</code>、<code>token</code>…）与域名黑名单，一行一条</td></tr>
+    <tr><td><b>隐私信号分离</b></td><td>DNT / GPC 只约束跨域预取，同源预渲染不受影响</td></tr>
+    <tr><td><b>仅桌面启用</b></td><td>触屏设备自动跳过，避免无谓流量</td></tr>
+    <tr><td><b>零外部依赖</b></td><td>不加载 CDN、不上报数据；设置面板是原生 <code>&lt;dialog&gt;</code></td></tr>
+  </tbody>
+</table>
+
+<h2>安装</h2>
+<ol>
+  <li>安装 <a href="https://www.tampermonkey.net/">Tampermonkey</a>（或 Violentmonkey），并打开扩展的「开发者模式」。</li>
+  <li>点上面的<strong>安装到 Tampermonkey</strong>，在扩展弹出的页面里确认。</li>
+  <li>打开任意网页，控制台出现下面这行即表示生效：</li>
+</ol>
+<div class="code"><code>[网页加速器] Speculation Rules 已提交。</code></div>
+<p>装好后无需配置。点击 Tampermonkey 图标可看到三个菜单项：<strong>一键开关</strong>（会重载当前页）、<strong>加速器设置</strong>（强度 / 排除域名 / 排除关键词）、<strong>查看运行状态</strong>（规则是否注入、是否被 CSP 拦截、当前 nonce 与排除模式）。</p>
+<div class="note">
+  <b>只启用一个版本。</b>仓库里保留了三份历史文件，同时启用会重复注入规则。从 6.8.0 升级到本版需要手动装一次（文件名变了），装完把「排除域名 / 排除关键词」粘回去、禁用旧条目即可。
+</div>
+
+<h2>注意事项</h2>
+<ul>
+  <li><strong>带副作用的链接不能被推测。</strong>预渲染会真实执行目标页脚本，预取也是真实的 GET 请求。登出、加购、删除、支付、一次性 token 类链接都会被真的执行或消耗——默认关键词表覆盖常见情况，站点特殊路径请自行补进「排除关键词」。</li>
+  <li><strong>跨域预取使用真实 IP，并消耗流量。</strong>介意可在面板里关掉「跨域 Prefetch」，站内加速不受影响。</li>
+  <li><strong>严格 CSP 的站点可能拦掉规则。</strong>规则由脚本注入，受 <code>script-src</code> 约束；脚本会复用页面 nonce。若站点既无 nonce 也未启用 <code>'inline-speculation-rules'</code>，规则会被拦下，「查看运行状态」里会标出。</li>
+  <li><strong>覆盖不了 SPA 路由。</strong><code>history.pushState</code> 驱动的软导航不在 API 范围内。</li>
+</ul>
+
+<h2>兼容性</h2>
+<table>
+  <thead><tr><th>环境</th><th>状态</th></tr></thead>
+  <tbody>
+    <tr><td>Chromium <b>122+</b> 桌面版（Chrome / Edge / Brave / Vivaldi）</td><td>✅ 完整支持</td></tr>
+    <tr><td>Chromium 121</td><td>⚠️ 多数场景可用（脚本省略的 <code>source</code> 键 122 才保证可推断）</td></tr>
+    <tr><td>Chromium 109–120</td><td>⚠️ 会注入，但 <code>where</code> / <code>eagerness</code> 未支持，整条规则被丢弃</td></tr>
+    <tr><td>Chromium ≤ 108</td><td>❌ <code>supports('speculationrules')</code> 为 false，静默退出</td></tr>
+    <tr><td>Firefox / Safari</td><td>❌ 无 Speculation Rules API</td></tr>
+    <tr><td>手机 / 平板</td><td>❌ 主动跳过（非精确指针设备）</td></tr>
+  </tbody>
+</table>
+<p style="font-size:14px;color:var(--muted)">文件名里的 <code>157</code> 是发布批次，不是版本要求；真正的门槛是上表的 122。</p>
+
+<h2>常见问题</h2>
+<details>
+  <summary>和 instant.page 有什么区别？</summary>
+  <p>instant.page 主要做 <code>&lt;link rel="prefetch"&gt;</code>，只把 HTML 取到缓存里；这个脚本用的是 Chromium 新的 Speculation Rules API，站内链接可以整页预渲染（连 JS 都跑完），点击时是切换而不是加载。跨域则只预取文档，不执行对方脚本。</p>
+</details>
+<details>
+  <summary>会拖慢浏览器或费流量吗？</summary>
+  <p>默认 <code>moderate</code>：悬停约 200ms 才动手，Chrome 同时最多保留 2 个预渲染，FIFO 淘汰。省流量模式、电量过低、内存紧张时浏览器会自己降低强度甚至忽略规则。默认只在桌面启用，且可一键关闭。</p>
+</details>
+<details>
+  <summary>会影响网站统计或登录状态吗？</summary>
+  <p>预渲染确实会真实执行目标页脚本，所以带副作用的链接必须排除——脚本内置了常见关键词表，你也可以自己加。跨域预取只取文档、不执行脚本，且 DNT / GPC 信号会跳过跨域。</p>
+</details>
+<details>
+  <summary>为什么有时候看不到效果？</summary>
+  <p>先看「查看运行状态」：规则被 CSP 拦掉、站点是 SPA、或者目标页本身很重，都会让收益变小。也可以在 DevTools 的 <strong>Application → Speculative loads</strong> 里直接看浏览器有没有真的预取/预渲染。</p>
+</details>
+
+<h2>English</h2>
+<div class="en">
+  <p><b>Chromium Speculation Accelerator</b> — a Tampermonkey userscript that injects <b>Speculation Rules</b> into any page, so Chrome/Edge 122+ prerenders same-origin links on hover and prefetches cross-origin documents. No background service, no telemetry, no dependencies; settings live in a native <code>&lt;dialog&gt;</code>. Side-effect links (logout, cart, one-time tokens), downloads, <code>nofollow</code> and in-page anchors are excluded by default, and DNT/GPC only gate cross-origin speculation.</p>
+  <p>Source, changelog and history: <a href="https://github.com/lhflowersbloom/chromium-speculation-accelerator">github.com/lhflowersbloom/chromium-speculation-accelerator</a></p>
+</div>
+
+<footer>
+  MIT · 初版来自 <a href="https://github.com/syhyz1990/instantpage">syhyz1990/instantpage</a> ·
+  <a href="https://github.com/lhflowersbloom/chromium-speculation-accelerator">GitHub</a> ·
+  <a href="https://github.com/lhflowersbloom/chromium-speculation-accelerator/blob/main/CHANGELOG.md">更新日志</a>
+</footer>
+
+</div>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "网页加速器",
+      "alternateName": "Chromium Speculation Accelerator",
+      "applicationCategory": "BrowserApplication",
+      "operatingSystem": "Chrome, Edge, Brave, Vivaldi (Chromium 122+)",
+      "softwareVersion": "6.8.3",
+      "license": "https://opensource.org/licenses/MIT",
+      "url": "https://lhflowersbloom.github.io/chromium-speculation-accelerator/",
+      "downloadUrl": "https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium157%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js",
+      "description": "Tampermonkey 油猴脚本：用 Chromium 原生 Speculation Rules API 预渲染站内链接、预取跨域文档，让网页跳转几乎瞬时完成。零依赖、无上报。",
+      "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "网页加速器脚本和 instant.page 有什么区别？",
+          "acceptedAnswer": {"@type": "Answer", "text": "instant.page 主要用 link rel=prefetch 把 HTML 取到缓存；网页加速器用 Chromium 的 Speculation Rules API，站内链接可整页预渲染，点击时是切换而不是加载，跨域则只预取文档不执行脚本。"}
+        },
+        {
+          "@type": "Question",
+          "name": "这个油猴脚本会拖慢浏览器或费流量吗？",
+          "acceptedAnswer": {"@type": "Answer", "text": "默认 moderate 强度：悬停约 200ms 才触发，Chrome 同时最多保留 2 个预渲染。省流量模式、电量过低或内存紧张时浏览器会自动降低强度。默认只在桌面启用，可一键关闭。"}
+        },
+        {
+          "@type": "Question",
+          "name": "支持哪些浏览器？",
+          "acceptedAnswer": {"@type": "Answer", "text": "Chromium 122 及以上的桌面版（Chrome、Edge、Brave、Vivaldi）完整支持；Firefox 与 Safari 没有 Speculation Rules API，手机平板会自动跳过。"}
+        }
+      ]
+    }
+  ]
+}
+</script>
+</body>
+</html>
