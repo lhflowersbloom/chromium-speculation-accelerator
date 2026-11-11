@@ -7,10 +7,38 @@
 
 | 版本 | 文件 | 状态 |
 |---|---|---|
-| 6.8.3 | `chromium157浏览器加速脚本.user.js` | ✅ 当前推荐 |
+| 6.8.4 | `chromium158浏览器加速脚本.user.js` | ✅ 当前推荐 |
+| 6.8.3 | `chromium157浏览器加速脚本.user.js` | 🗄 保留（上一版，未改动） |
 | 6.8.0 | `chromium156浏览器加速脚本.user.js` | 🗄 保留（上一版，未改动） |
 | 6.7.0 / 6.6.x | 同上 | 已被 6.8.0 覆盖 |
 | 6.5.2 | `chromium155浏览器加速脚本.user.js` | 🗄 保留（历史版本，停止维护） |
+
+---
+
+## 6.8.4 — 2026-11-11
+
+> 主题：把脚本元数据规范化。**没有任何运行逻辑改动**，规则生成、排除表、设置面板与 6.8.3 完全一致。
+
+### 变更
+
+- **`@namespace` 从 Tampermonkey 默认占位改为仓库地址**
+
+  原值是 `https://tampermonkey.net/` —— 这是新建脚本时 Tampermonkey 填的模板值，大量脚本都沿用它。
+  `@namespace` 与 `@name` 共同构成脚本 ID，占位值意味着身份不唯一，也容易与别的脚本撞。
+  现改为 `https://github.com/lhflowersbloom/chromium-speculation-accelerator`。
+
+  **代价**：脚本 ID 变了，Tampermonkey 会把它当成一个新脚本，升级需手动安装一次
+  （见 README「从 6.8.3 及更早升级」）。
+
+- **新增 `@homepageURL` 与 `@supportURL`**
+
+  `@homepageURL` 指向介绍页，`@supportURL` 指向仓库 issues。装完之后 Tampermonkey 的脚本详情页
+  会直接给出这两个入口，用户不必再去猜作者把说明写在哪儿。
+
+- **订正 `@author`**
+
+  原值 `ChatGPT & Gemini` 与 README 致谢（ChatGPT 与 DeepSeek）不一致，按 README 统一为
+  `ChatGPT & DeepSeek`。
 
 ---
 

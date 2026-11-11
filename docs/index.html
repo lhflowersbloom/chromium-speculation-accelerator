@@ -66,14 +66,14 @@
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">Tampermonkey · Chromium 122+ · v6.8.3</div>
+  <div class="eyebrow">Tampermonkey · Chromium 122+ · v6.8.4</div>
   <h1><span class="hl">网页加速器</span> — 让 Chrome 秒开下一个页面</h1>
   <p class="lede">Chromium 自带一个「提前准备下一个页面」的能力，只是几乎没有网站用它。这个油猴脚本以用户脚本的形式，替所有网站补上这段规则：指针悬停在链接上，目标页已经在后台渲染好，点下去直接呈现。</p>
   <ul class="chips">
     <li>Speculation Rules API</li><li>同源预渲染</li><li>跨域预取</li><li>零依赖 · 无上报</li>
   </ul>
   <div class="cta">
-    <a class="btn" href="https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium157%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js">安装到 Tampermonkey</a>
+    <a class="btn" href="https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium158%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js">安装到 Tampermonkey</a>
     <a class="btn alt" href="https://github.com/lhflowersbloom/chromium-speculation-accelerator">源码仓库</a>
   </div>
   <p style="font-size:14px;color:var(--muted);margin:0">需要先装 <a href="https://www.tampermonkey.net/">Tampermonkey</a>（Violentmonkey 亦可）。链接触发的是安装请求，不是下载文件。</p>
@@ -112,7 +112,7 @@
 <div class="code"><code>[网页加速器] Speculation Rules 已提交。</code></div>
 <p>装好后无需配置。点击 Tampermonkey 图标可看到三个菜单项：<strong>一键开关</strong>（会重载当前页）、<strong>加速器设置</strong>（强度 / 排除域名 / 排除关键词）、<strong>查看运行状态</strong>（规则是否注入、是否被 CSP 拦截、当前 nonce 与排除模式）。</p>
 <div class="note">
-  <b>只启用一个版本。</b>仓库里保留了三份历史文件，同时启用会重复注入规则。从 6.8.0 升级到本版需要手动装一次（文件名变了），装完把「排除域名 / 排除关键词」粘回去、禁用旧条目即可。
+  <b>只启用一个版本。</b>仓库里保留了多份历史文件，同时启用会重复注入规则。6.8.4 更换了 <code>@namespace</code>，会被 Tampermonkey 当成新脚本，升级需手动装一次 —— 装完把「排除域名 / 排除关键词」粘回去、禁用旧条目即可（不必删除）。
 </div>
 
 <h2>注意事项</h2>
@@ -179,10 +179,10 @@
       "alternateName": "Chromium Speculation Accelerator",
       "applicationCategory": "BrowserApplication",
       "operatingSystem": "Chrome, Edge, Brave, Vivaldi (Chromium 122+)",
-      "softwareVersion": "6.8.3",
+      "softwareVersion": "6.8.4",
       "license": "https://opensource.org/licenses/MIT",
       "url": "https://lhflowersbloom.github.io/chromium-speculation-accelerator/",
-      "downloadUrl": "https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium157%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js",
+      "downloadUrl": "https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium158%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js",
       "description": "Tampermonkey 油猴脚本：用 Chromium 原生 Speculation Rules API 预渲染站内链接、预取跨域文档，让网页跳转几乎瞬时完成。零依赖、无上报。",
       "offers": {"@type": "Offer", "price": "0", "priceCurrency": "CNY"}
     },

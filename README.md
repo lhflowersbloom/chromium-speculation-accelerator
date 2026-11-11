@@ -3,9 +3,9 @@
 > 用 Chromium 原生的 **Speculation Rules API** 预渲染 / 预取下一个可能访问的页面，让站内跳转几乎无需等待。
 > 一个只做这件事的 Tampermonkey 用户脚本：无后台、无上报、无外部依赖。
 
-### [⬇️ 安装 v6.8.3](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium157%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
+### [⬇️ 安装 v6.8.4](https://raw.githubusercontent.com/lhflowersbloom/chromium-speculation-accelerator/main/chromium158%e6%b5%8f%e8%a7%88%e5%99%a8%e5%8a%a0%e9%80%9f%e8%84%9a%e6%9c%ac.user.js)
 
-![version](https://img.shields.io/badge/version-6.8.3-blue)
+![version](https://img.shields.io/badge/version-6.8.4-blue)
 ![platform](https://img.shields.io/badge/Chromium-122%2B-green)
 ![type](https://img.shields.io/badge/Tampermonkey-userscript-orange)
 
@@ -50,10 +50,11 @@ Chromium 自带一种「提前准备下一个页面」的能力：页面声明�
 
 > `.user.js` 结尾的直链会被 Tampermonkey 识别为安装请求；从 GitHub 文件页点 Raw 亦可，只是多一步。
 
-**只启用一个。** 仓库保留了三个版本的文件，同时启用会重复注入规则。
+**只启用一个。** 仓库保留了多个版本的文件，同时启用会重复注入规则。
 
-> **从 6.8.0 升级**：本版更换了文件名（`chromium156…` → `chromium157…`），需手动安装一次。
-> 安装前请复制「排除域名 / 排除关键词」两栏内容，装完粘回；随后禁用旧的 `chromium156…` 条目即可（不必删除）。
+> **从 6.8.3 及更早升级**：6.8.4 更换了 `@namespace`（`@namespace + @name` 共同构成脚本 ID），
+> 会被 Tampermonkey 识别为**新脚本**，需手动安装一次。
+> 安装前请复制「排除域名 / 排除关键词」两栏内容，装完粘回；随后禁用旧的条目即可（不必删除）。
 
 <details>
 <summary>需要回到旧版 v6.5.2</summary>
@@ -126,13 +127,15 @@ Tampermonkey 按 `@updateURL` 自动检查（默认每日一次）；需要立�
 
 它**只认 `@version`**：改了代码但没有提升版本号，不会提示更新。当前版本可在设置面板标题或「查看运行状态」首行确认。
 
-> 6.8.3 起 `@updateURL` 指向 `chromium157浏览器加速脚本.user.js`，与安装地址一致，后续版本可直接推送。6.8.0 那版的地址指向 `chromium156…`，这也是它收不到本版更新的原因。
+> 6.8.4 起 `@updateURL` 指向 `chromium158浏览器加速脚本.user.js`，与安装地址一致，后续版本可直接推送。
+> 6.8.0 那版的地址指向 `chromium156…`，这也是它收不到后续版本更新的原因。
 
 ## 文件与版本
 
 ```
-chromium157浏览器加速脚本.user.js   # 当前版本 v6.8.3，约 1220 行
-chromium156浏览器加速脚本.user.js   # 上一版 v6.8.0，原样保留
+chromium158浏览器加速脚本.user.js   # 当前版本 v6.8.4，约 1230 行
+chromium157浏览器加速脚本.user.js   # 上一版 v6.8.3，原样保留
+chromium156浏览器加速脚本.user.js   # v6.8.0，原样保留
 chromium155浏览器加速脚本.user.js   # 历史版本 v6.5.2，原样保留
 CHANGELOG.md                        # 每个版本改了什么、为什么改
 docs/                               # 介绍页（GitHub Pages）
@@ -140,7 +143,8 @@ docs/                               # 介绍页（GitHub Pages）
 
 | 版本 | 要点 |
 |---|---|
-| **6.8.3** | 跨域预取不再排除 `target="_blank"`；面板样式复用 nonce；更新地址指向新文件 |
+| **6.8.4** | `@namespace` 改为仓库地址、补 `@homepageURL` / `@supportURL`、订正 `@author` |
+| 6.8.3 | 跨域预取不再排除 `target="_blank"`；面板样式复用 nonce；更新地址指向新文件 |
 | 6.8.0 | 脚本名简化为「网页加速器」，版本号不再混进名字 |
 | 6.7.0 | 隐私信号只约束跨域预取，同源预渲染不再被整体关停 |
 
